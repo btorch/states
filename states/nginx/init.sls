@@ -43,16 +43,15 @@ nginx-old-init:
       - file: nginx-old-init
   module:
     - wait
-    - name: service.stop
-    - m_name: nginx
+    - name: cmd.run
+    - cmd: kill `cat /var/run/nginx.pid`
     - watch:
       - file: nginx-old-init
 
 nginx-old-init-disable:
-  module:
+  cmd:
     - wait
-    - name: cmd.run
-    - cmd: update-rc.d -f remove nginx
+    - name: update-rc.d -f nginx remove
     - require:
       - module: nginx-old-init
     - watch:
@@ -61,6 +60,9 @@ nginx-old-init-disable:
 {% set logger_types = ('access', 'error') %}
 
 {% for log_type in logger_types %}
+/var/log/nginx/{{ log_type }}.log:
+  file.absent
+
 nginx-logger-{{ log_type }}:
   file:
     - managed
@@ -108,6 +110,7 @@ nginx:
     - require:
       - pkg: nginx
       - file: nginx-old-init
+      - module: nginx-old-init
   service:
     - running
     - enable: True
