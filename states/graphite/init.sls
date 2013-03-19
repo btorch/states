@@ -9,6 +9,9 @@ include:
   - memcache
   - diamond
   - pip
+{% if pillar['graphite']['web']['ssl']|default(False) %}
+  - ssl
+{% endif %}
 
 {#graphite_logrotate:#}
 {#  file:#}
@@ -115,8 +118,7 @@ graphite-web:
       - module: graphite-web
   pip:
     - installed
-    - name: git+git://github.com/jeffkistler/django-decorator-include.git#egg=django-decorator-include
-{#    - editable: True#}
+    - editable: git+git://github.com/jeffkistler/django-decorator-include.git#egg=django-decorator-include
     - bin_env: /usr/local/graphite/bin/pip
     - require:
       - file: pip-cache
@@ -248,7 +250,7 @@ graphite_settings:
       domain_name: {{ pillar['graphite']['web']['hostnames'][0] }}
       uri: /account/login
 
-uwsgi_diamond_graphite:
+uwsgi_diamond_graphite_resources:
   file:
     - accumulated
     - name: processes
@@ -286,3 +288,8 @@ extend:
     service:
       - watch:
         - file: /etc/nginx/conf.d/graphite.conf
+{% if pillar['graphite']['web']['ssl']|default(False) %}
+    {% for filename in ('server.key', 'server.crt', 'ca.crt') %}
+        - file: /etc/ssl/{{ pillar['graphite']['web']['ssl'] }}/{{ filename }}
+    {% endfor %}
+{% endif %}

@@ -8,6 +8,9 @@ include:
   - nginx
   - diamond
   - pip
+{% if pillar['sentry']['ssl']|default(False) %}
+  - ssl
+{% endif %}
 
 sentry:
   virtualenv:
@@ -182,7 +185,7 @@ sentry-migrate-fake:
     - source: salt://sentry/backup.jinja2
 {% endif %}
 
-uwsgi_diamond_sentry:
+uwsgi_diamond_sentry_resources:
   file:
     - accumulated
     - name: processes
@@ -214,3 +217,8 @@ extend:
     service:
       - watch:
         - file: /etc/nginx/conf.d/sentry.conf
+{% if pillar['sentry']['ssl']|default(False) %}
+    {% for filename in ('server.key', 'server.crt', 'ca.crt') %}
+        - file: /etc/ssl/{{ pillar['sentry']['ssl'] }}/{{ filename }}
+    {% endfor %}
+{% endif %}

@@ -50,13 +50,17 @@ nagios-nrpe-server:
 
 /usr/local/bin/check_memory.py:
   file:
+    - absent
+
+/usr/lib/nagios/plugins/check_memory.py:
+  file:
     - managed
     - source: salt://nrpe/check.py
     - user: root
     - group: root
     - mode: 555
 
-nrpe_diamond_memory:
+nrpe_diamond_resources:
   file:
     - accumulated
     - name: processes

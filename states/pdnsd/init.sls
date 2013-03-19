@@ -53,7 +53,7 @@ pdnsd:
     - mode: 440
     - source: salt://pdnsd/nrpe.jinja2
 
-pdsnd_diamond_memory:
+pdsnd_diamond_resources:
   file:
     - accumulated
     - name: processes
@@ -66,10 +66,6 @@ pdsnd_diamond_memory:
         exe = ^\/usr\/sbin\/pdnsd$
 
 extend:
-  diamond:
-    service:
-      - watch:
-        - file: pdsnd_diamond_memory
   nagios-nrpe-server:
     service:
       - watch:

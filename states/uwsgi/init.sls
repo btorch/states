@@ -80,6 +80,10 @@ diamond_ksm:
 
 /usr/local/bin/uwsgi-nagios.sh:
   file:
+   - absent
+
+/usr/lib/nagios/plugins/check_uwsgi:
+  file:
     - managed
     - template: jinja
     - source: salt://uwsgi/nagios_check.jinja2
@@ -128,7 +132,7 @@ uwsgi_emperor:
     - require:
       - pkg: nginx
 
-uwsgi_diamond:
+uwsgi_diamond_resources:
   file:
     - accumulated
     - name: processes

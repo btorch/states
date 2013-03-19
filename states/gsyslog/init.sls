@@ -11,9 +11,19 @@ sysklogd:
     - names:
       - sysklogd
       - klogd
-  service:
-    - dead
-    - enable: False
+  module:
+    - wait
+    - name: cmd.run
+    - cmd: /etc/init.d/sysklogd stop
+    - watch:
+      - pkg: sysklogd
+  cmd:
+    - wait
+    - name: update-rc.d -f sysklogd remove
+    - require:
+      - module: sysklogd
+    - watch:
+      - pkg: sysklogd
 
 {% if grains['virtual'] == 'openvzve' %}
 klogd:
@@ -32,7 +42,7 @@ gsyslog_upstart:
     - mode: 440
     - source: salt://gsyslog/upstart.jinja2
     - require:
-      - service: sysklogd
+      - module: sysklogd
 
 /etc/logrotate.d/gsyslog:
   file:
@@ -90,7 +100,7 @@ gsyslog:
       - file: gsyslog
       - cmd: gsyslog
     - require:
-      - service: sysklogd
+      - module: sysklogd
       - module: gsyslog
       - file: /etc/gsyslog.d
   cmd:
@@ -107,7 +117,7 @@ gsyslog:
     - group: root
     - mode: 555
 
-gsyslog_diamond_memory:
+gsyslog_diamond_resources:
   file:
     - accumulated
     - name: processes
@@ -118,19 +128,21 @@ gsyslog_diamond_memory:
       - |
         [[gsyslog]]
         cmdline = ^\/usr\/local\/gsyslog\/bin\/python \/usr\/local\/gsyslog\/bin\/gsyslogd
+        [[klogd]
+        exe = ^\/sbin\/klogd
 
 rsyslog:
   pkg:
     - purged
     - require:
-      - service: sysklogd
+      - module: sysklogd
 
 {% for cron in ('weekly', 'daily') %}
 /etc/cron.{{ cron }}/sysklogd:
   file:
     - absent
     - require:
-      - service: sysklogd
+      - module: sysklogd
 {% endfor %}
 
 /etc/nagios/nrpe.d/gsyslog.cfg:

@@ -43,7 +43,7 @@ openvpn_diamond_collector:
       instances: {{ pillar['openvpn'] }}
 {% endif %}
 
-openvpn_diamond_memory:
+openvpn_diamond_resources:
   file:
     - accumulated
     - name: processes
@@ -65,11 +65,10 @@ openvpn_diamond_memory:
 {% endfor %}
 
 extend:
+{% if 'openvpn' in pillar %}
   diamond:
     service:
       - watch:
-        - file: openvpn_diamond_memory
-{% if 'openvpn' in pillar %}
         - file: openvpn_diamond_collector
 {% endif %}
   nagios-nrpe-server:

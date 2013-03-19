@@ -5,7 +5,10 @@ include:
   - nrpe
   - diamond
   - pip
-{% if grains['id'] in pillar['shinken']['architecture']['broker'] %}
+{% if pillar['shinken']['ssl']|default(False) %}
+  - ssl
+{% endif %}
+{% if grains['id'] in pillar['shinken']['architecture']['broker']|default([]) %}
   - nginx
 {% endif %}
 
@@ -48,7 +51,7 @@ include:
     - require:
       - user: shinken
 
-{% if 'ssl' in pillar['shinken'] and grains['id'] in pillar['shinken']['architecture']['broker'] %}
+{% if pillar['shinken']['ssl']|default(False) and grains['id'] in pillar['shinken']['architecture']['broker']|default([]) %}
 {% for key_file in pillar['shinken']['ssl'] %}
 /usr/local/shinken/{{ key_file }}:
   file:
@@ -72,7 +75,7 @@ shinken:
       - file: /var/lib/shinken
   pip:
     - installed
-    - name: -e git+git://github.com/naparuba/shinken.git@{{ pillar['shinken']['revision'] }}#egg=shinken
+    - editable: git+git://github.com/naparuba/shinken.git@{{ pillar['shinken']['revision'] }}#egg=shinken
     - bin_env: /usr/local/shinken
     - require:
       - virtualenv: shinken
@@ -159,7 +162,7 @@ shinken-{{ role }}:
 
 {% endif %}
 
-shinken_{{ role }}_diamond_memory:
+shinken_{{ role }}_diamond_resources:
   file:
     - accumulated
     - name: processes
@@ -207,10 +210,10 @@ extend:
     service:
       - watch:
         - file: /etc/nginx/conf.d/shinken-web.conf
-{% if 'ssl' in pillar['shinken'] %}
-{% for key_file in pillar['shinken']['ssl'] %}
-        - file: /usr/local/shinken/{{ key_file }}
-{% endfor %}
+{% if pillar['shinken']['ssl']|default(False) %}
+    {% for filename in ('server.key', 'server.crt', 'ca.crt') %}
+        - file: /etc/ssl/{{ pillar['shinken']['ssl'] }}/{{ filename }}
+    {% endfor %}
 {% endif %}
 {% endif %}
 {% endif %}

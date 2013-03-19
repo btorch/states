@@ -4,6 +4,9 @@ include:
   - nginx
   - diamond
   - nrpe
+{% if pillar['salt_master']['ssl']|default(False) %}
+  - ssl
+{% endif %}
 
 salt_api:
   group:
@@ -93,7 +96,7 @@ salt-ui:
     - mode: 440
     - source: salt://salt/api/nrpe.jinja2
 
-salt_api_diamond_memory:
+salt_api_diamond_resources:
   file:
     - accumulated
     - name: processes
@@ -114,6 +117,11 @@ extend:
     service:
       - watch:
         - file: salt-ui
+{% if pillar['salt_master']['ssl']|default(False) %}
+    {% for filename in ('server.key', 'server.crt', 'ca.crt') %}
+        - file: /etc/ssl/{{ pillar['salt_master']['ssl'] }}/{{ filename }}
+    {% endfor %}
+{% endif %}
   salt-master:
     service:
       - watch:

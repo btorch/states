@@ -5,6 +5,7 @@
 
 include:
   - git
+  - diamond
 
 git-server:
   user:
@@ -60,3 +61,15 @@ git-server-key-{{ user }}:
     - require:
       - module: /var/lib/git-server/{{ repository }}.git
 {% endfor %}
+
+git_diamond_resources:
+  file:
+    - accumulated
+    - name: processes
+    - filename: /etc/diamond/collectors/ProcessResourcesCollector.conf
+    - require_in:
+      - file: /etc/diamond/collectors/ProcessResourcesCollector.conf
+    - text:
+      - |
+        [[git-server]]
+        exe = ^\/usr\/bin\/git-shell$

@@ -88,7 +88,7 @@ elasticsearch:
       - elasticsearch_plugins: elasticsearch
 {% endif %}
 
-elasticsearch_diamond_memory:
+elasticsearch_diamond_resources:
   file:
     - accumulated
     - name: processes
@@ -110,6 +110,10 @@ elasticsearch_diamond_memory:
     - source: salt://elasticsearch/nrpe.jinja2
 
 /usr/local/bin/check_elasticsearch_cluster.py:
+  file:
+    - absent
+
+/usr/lib/nagios/plugins/check_elasticsearch_cluster.py:
   file:
     - managed
     - source: salt://elasticsearch/check.py
